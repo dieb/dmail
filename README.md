@@ -27,14 +27,13 @@ dmail:
 
 Listing emails:
 
-```
+``` bash
 $ dmail list
-
 ```
 
 Viewing emails:
 
-```
+``` bash
 $ dmail show CAC0GtHcR13bnhLju=DymZm0fr778LALHw3HwWUVXrM81c4Hc+Q@mail.gmail.com
 ```
 
