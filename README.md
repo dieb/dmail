@@ -8,7 +8,7 @@ Command-line email client.
 
 ## Setup
 
-dmail reads settings firstly from ''.dmailrc.yaml'' and fallbacks to ''~/.dmailrc.yaml''.
+dmail reads settings firstly from ``.dmailrc.yaml`` and fallbacks to ``~/.dmailrc.yaml``.
 
 Gmail setup:
 
