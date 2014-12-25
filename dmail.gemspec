@@ -25,4 +25,5 @@ Gem::Specification.new do |s|
 
   s.add_dependency('mail', '~> 2.6')
   s.add_dependency('term-ansicolor', '~> 1.3')
+  s.add_dependency('pager', '~> 1.0.1')
 end

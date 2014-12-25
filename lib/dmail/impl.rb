@@ -1,11 +1,14 @@
 require 'mail'
 require 'term/ansicolor'
+require 'pager'
 
 module Dmail
   module Impl
+    include Pager
     include Term::ANSIColor
 
     def list
+      page
       Mail.find(read_only: true, what: :first, count: 10, order: :asc)[1..-1].each do |email|
         puts yellow { "id #{email.message_id}" }
         puts "From: #{email.from.first}"
@@ -18,6 +21,7 @@ module Dmail
     end
 
     def show
+      page
       message_id = ARGV[1]
 
       message = if message_id then
@@ -41,10 +45,8 @@ module Dmail
 
     def status
       common_options = { mailbox: 'INBOX', read_only: true }
-      all = Mail.find(common_options.merge(keys: 'ALL', count: 1000)).count
       unseen = Mail.find(common_options.merge(keys: 'UNSEEN', count: 1000)).count
-      puts "All: #{all}"
-      puts "New: #{unseen}"
+      puts "Unread: #{unseen}"
     end
   end
 end
