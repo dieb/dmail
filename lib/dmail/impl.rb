@@ -8,8 +8,19 @@ module Dmail
     include Term::ANSIColor
 
     def list
+      params = get_params(
+        :mailbox,
+        count: %w(-c --count),
+        unread: %w(-u --unread)
+      )
+      options = { read_only: true, order: :asc, what: :first }
+      options[:mailbox] = params[:mailbox] || 'INBOX'
+      options[:count] = params[:count].nil? ? 10 : params[:count].to_i
+      options[:keys] = 'UNSEEN' if params[:unread]
+
       page
-      Mail.find(read_only: true, what: :first, count: 10, order: :asc)[1..-1].each do |email|
+
+      Mail.find(options).each do |email|
         puts yellow { "id #{email.message_id}" }
         puts "From: #{email.from.first}"
         puts "Date: #{email.date.rfc2822}"
@@ -47,6 +58,49 @@ module Dmail
       common_options = { mailbox: 'INBOX', read_only: true }
       unseen = Mail.find(common_options.merge(keys: 'UNSEEN', count: 1000)).count
       puts "Unread: #{unseen}"
+    end
+
+    def get_params(keys, mappings)
+      params = {}
+      [keys].flatten.each do |key|
+        value = arguments[key.to_s]
+        params[key] = value if value
+      end
+      mappings.each do |final_name, substitutes|
+        value = substitutes.map { |s| arguments[s] }.find { |el| el }
+        params[final_name] = value if value
+      end
+      params
+    end
+
+    def arguments
+      @args ||= {}
+      unless @args.size > 0
+        ARGV.each_with_index do |arg, index|
+          if arg.start_with?('-')
+            if index + 1 < ARGV.size
+              next_arg = ARGV[index + 1]
+              if next_arg.start_with?('-') then
+                @args.update(argument_present_or_direct(arg))
+              else
+                @args.update(arg => next_arg)
+              end
+            else
+              @args.update(argument_present_or_direct(arg))
+            end
+          end
+        end
+      end
+      @args
+    end
+
+    def argument_present_or_direct(arg)
+      arg, value = if arg.include?('=') then
+        arg.split('=')
+      else
+        [arg, true]
+      end
+      { arg => value }
     end
   end
 end
