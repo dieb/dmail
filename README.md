@@ -1,3 +1,5 @@
+[![Gem Version](https://badge.fury.io/rb/dmail.svg)](http://badge.fury.io/rb/dmail)
+
 # dmail
 
 Command-line email client.
