@@ -17,7 +17,7 @@ module Dmail
     def list
       params = get_params(
         :mailbox,
-        count: %w(-c --count),
+        count:  %w(-c --count),
         unread: %w(-u --unread)
       )
       query = { read_only: true, order: :asc, what: :first }
