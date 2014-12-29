@@ -7,32 +7,47 @@ module Dmail
     include Utils
     include Term::ANSIColor
 
+    DOCS_PATH = File.join(File.dirname(__FILE__), '..', '..', 'doc')
+
+    def help
+      doc = ARGV[1].nil? ? 'main.txt' : "dmail-#{ARGV[1]}.txt"
+      puts IO.read(File.join(DOCS_PATH, doc))
+    end
+
     def list
       params = get_params(
         :mailbox,
         count: %w(-c --count),
         unread: %w(-u --unread)
       )
-      options = { read_only: true, order: :asc, what: :first }
-      options[:mailbox] = params[:mailbox] || 'INBOX'
-      options[:count] = params[:count].nil? ? 10 : params[:count].to_i
-      options[:keys] = 'UNSEEN' if params[:unread]
+      query = { read_only: true, order: :asc, what: :first }
+      query[:mailbox] = params[:mailbox] || 'INBOX'
+      query[:count] = params[:count].nil? ? 10 : params[:count].to_i
+      query[:keys] = 'UNSEEN' if params[:unread]
 
       setup_pager!
-      Mail.find(options).each { |email| print_email_header(email) }
+      Mail.find(query).each { |email| print_email_header(email) }
     end
 
     def show
-      message_id = ARGV[1]
+      params = get_params(
+        :mailbox,
+        leave_unread: %w(-m --leave-unread)
+      )
+      query = {}
+      query[:mailbox] = params[:mailbox] || 'INBOX'
+      query[:read_only] = true if params[:leave_unread]
 
-      message = if message_id then
-        Mail.find(keys: "HEADER Message-id #{message_id}")
+      message_id = ARGV[1]
+      if message_id then
+        query[:keys] = "HEADER Message-id #{message_id}"
       else
-        Mail.find(what: :last, count: 1)
+        query[:what] = :last
+        query[:count] = 1
       end
 
       setup_pager!
-      [message].flatten.each do |email|
+      [Mail.find(query)].flatten.each do |email|
         print_email_header(email)
         puts
         puts email.text_part.decoded.strip
@@ -41,8 +56,11 @@ module Dmail
     end
 
     def status
-      common_options = { mailbox: 'INBOX', read_only: true }
-      unseen = Mail.find(common_options.merge(keys: 'UNSEEN', count: 1000)).count
+      params = get_params(:mailbox)
+      query = { keys: 'UNSEEN', read_only: true }
+      query[:mailbox] = params[:mailbox] || 'INBOX'
+      query[:count] = 1000 # Hack to read all unreads and not only 10
+      unseen = Mail.find(query).count
       puts "Unread: #{unseen}"
     end
 

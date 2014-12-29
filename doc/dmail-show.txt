@@ -1,0 +1,6 @@
+usage: dmail show [--leave-unread] [--mailbox=<mailbox>] [<message_id>]
+
+Shows an email. If id is unspecified, shows the last received email.
+
+    --leave-unread                  Reads the email but keeps it marked as unread
+    --mailbox=<mailbox>             Specifies which mailbox to read from. Default: INBOX

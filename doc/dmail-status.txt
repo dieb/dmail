@@ -1,0 +1,5 @@
+usage: dmail status [--mailbox=<mailbox>]
+
+Show mailbox status.
+
+    --mailbox=<mailbox>             Specifies which mailbox to read from. Default: INBOX

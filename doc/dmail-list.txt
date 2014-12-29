@@ -1,0 +1,7 @@
+usage: dmail list [-c <count>| --count=<count>] [-u | --unread] [--mailbox=<mailbox>]
+
+Lists emails.
+
+    -c <count>, --count=<count>     Limit the number of emails fetched. Default: 10
+    -u, --unread                    Fetches only unread emails
+    --mailbox=<mailbox>             Specifies which mailbox to read from. Default: INBOX

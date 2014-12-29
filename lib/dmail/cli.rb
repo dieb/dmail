@@ -10,20 +10,24 @@ module Dmail
     def initialize
       @action = ARGV.first.gsub('--', '')
       @coloring = true
-      load_preferences
+      load_settings
     end
 
     def run
       send(@action)
     end
 
-    def help
-      puts 'TODO help'
-    end
-
     private
 
-    def load_preferences
+    def load_settings
+      preferences ||= if File.exists?('.dmailrc.yaml')
+        YAML.load(IO.read('.dmailrc.yaml'))
+      elsif File.exists?('~/.dmailrc.yaml')
+        YAML.load(IO.read('~/.dmailrc.yaml'))
+      else
+        fail('dmail: could not find .dmailrc.yaml here or on your home directory.')
+      end
+
       retriever_preferences = preferences['dmail']['reading']
 
       Mail.defaults do
@@ -35,16 +39,6 @@ module Dmail
           password: retriever_preferences['password'],
           enable_ssl: retriever_preferences['enable_ssl']
         )
-      end
-    end
-
-    def preferences
-      @preferences ||= if File.exists?('.dmailrc.yaml')
-        YAML.load(IO.read('.dmailrc.yaml'))
-      elsif File.exists?('~/.dmailrc.yaml')
-        YAML.load(IO.read('~/.dmailrc.yaml'))
-      else
-        fail('dmail: could not find .dmailrc.yaml here or on your home directory.')
       end
     end
   end

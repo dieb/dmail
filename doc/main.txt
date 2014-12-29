@@ -1,0 +1,6 @@
+usage: dmail [--version] <command> [<args>]
+
+The most commonly used dmail commands are:
+    list      List emails
+    show      Show a single email
+    status    Show mailbox status
