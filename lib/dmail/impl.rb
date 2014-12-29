@@ -1,10 +1,10 @@
 require 'mail'
-require 'term/ansicolor'
-require 'pager'
+
+require File.join(File.dirname(__FILE__), 'utils')
 
 module Dmail
   module Impl
-    include Pager
+    include Utils
     include Term::ANSIColor
 
     def list
@@ -18,21 +18,11 @@ module Dmail
       options[:count] = params[:count].nil? ? 10 : params[:count].to_i
       options[:keys] = 'UNSEEN' if params[:unread]
 
-      page
-
-      Mail.find(options).each do |email|
-        puts yellow { "id #{email.message_id}" }
-        puts "From: #{email.from.first}"
-        puts "Date: #{email.date.rfc2822}"
-        puts "Message ID: #{email.message_id}" if @all
-        puts
-        puts "    #{email.subject}"
-        puts
-      end
+      setup_pager!
+      Mail.find(options).each { |email| print_email_header(email) }
     end
 
     def show
-      page
       message_id = ARGV[1]
 
       message = if message_id then
@@ -41,14 +31,10 @@ module Dmail
         Mail.find(what: :last, count: 1)
       end
 
+      setup_pager!
       [message].flatten.each do |email|
-        puts yellow { "id #{email.message_id}" }
-        puts "From: #{email.from.first}"
-        puts "Date: #{email.date.rfc2822}"
-        puts "Message ID: #{email.message_id}" if @all
+        print_email_header(email)
         puts
-        puts "    #{email.subject}"
-        puts "\n"
         puts email.text_part.decoded.strip
         puts
       end
@@ -60,47 +46,16 @@ module Dmail
       puts "Unread: #{unseen}"
     end
 
-    def get_params(keys, mappings)
-      params = {}
-      [keys].flatten.each do |key|
-        value = arguments[key.to_s]
-        params[key] = value if value
-      end
-      mappings.each do |final_name, substitutes|
-        value = substitutes.map { |s| arguments[s] }.find { |el| el }
-        params[final_name] = value if value
-      end
-      params
-    end
+    private
 
-    def arguments
-      @args ||= {}
-      unless @args.size > 0
-        ARGV.each_with_index do |arg, index|
-          if arg.start_with?('-')
-            if index + 1 < ARGV.size
-              next_arg = ARGV[index + 1]
-              if next_arg.start_with?('-') then
-                @args.update(argument_present_or_direct(arg))
-              else
-                @args.update(arg => next_arg)
-              end
-            else
-              @args.update(argument_present_or_direct(arg))
-            end
-          end
-        end
-      end
-      @args
-    end
-
-    def argument_present_or_direct(arg)
-      arg, value = if arg.include?('=') then
-        arg.split('=')
-      else
-        [arg, true]
-      end
-      { arg => value }
+    def print_email_header(email)
+      puts yellow { "id #{email.message_id}" }
+      puts "From: #{email.from.first}"
+      puts "Date: #{email.date.rfc2822}"
+      puts "Message ID: #{email.message_id}" if @all
+      puts
+      puts "    #{email.subject}"
+      puts
     end
   end
 end
