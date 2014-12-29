@@ -15,6 +15,8 @@ module Dmail
 
     def run
       send(@action)
+    rescue NoMethodError
+      puts "dmail: '#{ARGV[0]}' is not a valid dmail command. See 'dmail help'."
     end
 
     private
